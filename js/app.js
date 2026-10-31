@@ -9,7 +9,7 @@
   // Constants & Storage Keys
   const STORAGE_KEY_CINII_PROXY = 'lib_osusume_cinii_proxy';
   const STORAGE_KEY_NDL_PROXY = 'lib_osusume_ndl_proxy';
-  const DEFAULT_CINII_PROXY = 'https://github.com/maedaak/lib_osusume';
+  const DEFAULT_CINII_PROXY = 'ciniir-isbn-restricted.maedaak.workers.dev'
   const MAX_INPUT_CHARS = 1000;
 
   // Sample ISBN list
