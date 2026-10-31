@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="libオススメ - 書籍を大学図書館（CiNii Research）と公共図書館（国立国会図書館サーチ）のそれぞれの所蔵館数により評価・分析する選書支援ツールです。">
+  <title>libオススメ - 図書館所蔵数による選書評価ツール</title>
+  
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+  <!-- Application Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="header-badge">選書評価支援ツール</div>
+      <h1 class="header-title">libオススメ</h1>
+      <p class="header-subtitle">
+        書籍を大学図書館（CiNii Research）および公共図書館（国会図書館サーチ）のそれぞれの所蔵館数から客観的に評価します。
+      </p>
+      
+      <div class="header-purpose">
+        <span class="header-purpose-title">大学図書館の蔵書選定における参考指標:</span>
+        <ul>
+          <li>大学生・研究者向け専門書か一般教養図書かの判別</li>
+          <li>大学図書館向けか、あるいは公共図書館向きの書籍かの見極め</li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-container">
+    
+    <!-- Input & Controls Card -->
+    <section class="card" aria-labelledby="inputSectionTitle">
+      <h2 id="inputSectionTitle" class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+        ISBN入力・選書評価
+      </h2>
+
+      <div class="controls-grid">
+        <!-- Textarea with char counter -->
+        <div>
+          <div class="input-label-row">
+            <label for="isbnInput" class="input-label">
+              ISBNコード（単一または改行区切りのリスト）
+            </label>
+            <span id="charCounter" class="char-counter">0 / 1000 文字</span>
+          </div>
+          <div class="textarea-wrapper">
+            <textarea 
+              id="isbnInput" 
+              name="isbn" 
+              class="isbn-textarea" 
+              maxlength="1000" 
+              placeholder="ISBN（例: 978-4-480-06618-3）を1行ずつ貼り付けてください..."
+              rows="4"
+              spellcheck="false"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons-row">
+          <button type="button" id="btnNext" class="btn btn-primary" title="リストの先頭ISBNを評価し、残りを保持します (Ctrl+Enter)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            次を表示・評価
+          </button>
+          
+          <button type="button" id="btnClear" class="btn btn-secondary" title="入力をリセット">
+            最初から
+          </button>
+
+          <button type="button" id="btnLoadSample" class="btn btn-subtle" title="テスト用ISBNリストを入力欄に一括読み込み">
+            お試し用リストを一括投入
+          </button>
+        </div>
+
+        <!-- Processing Status Banner -->
+        <div id="processingBanner" class="processing-banner">
+          <span class="processing-label">現在処理中のISBN:</span>
+          <span id="currentIsbnBadge" class="processing-isbn">未処理</span>
+        </div>
+
+        <!-- Evaluation Thresholds -->
+        <div class="thresholds-grid">
+          <div class="threshold-group">
+            <label for="ciniiLimitSelect" class="threshold-label">
+              大学図書館 (CiNii) 所蔵評価 基準値:
+            </label>
+            <select id="ciniiLimitSelect" class="select-input">
+              <option value="30">30 館</option>
+              <option value="50">50 館</option>
+              <option value="100" selected>100 館 (推奨)</option>
+              <option value="150">150 館</option>
+            </select>
+          </div>
+
+          <div class="threshold-group">
+            <label for="pubLimitSelect" class="threshold-label">
+              公共図書館 (NDL Search) 所蔵評価 基準値:
+            </label>
+            <select id="pubLimitSelect" class="select-input">
+              <option value="30">30 館</option>
+              <option value="35" selected>35 館 (推奨)</option>
+              <option value="40">40 館</option>
+              <option value="45">45 館</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Advanced Proxy Settings -->
+        <details class="settings-details">
+          <summary class="settings-summary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            APIエンドポイント・プロキシ設定 (デプロイ環境切り替え対応)
+          </summary>
+          <div class="settings-body">
+            <div>
+              <label for="ciniiProxyInput" class="threshold-label">
+                CiNii Research API プロキシURL:
+              </label>
+              <input 
+                type="text" 
+                id="ciniiProxyInput" 
+                class="text-input" 
+                style="width: 100%; font-family: var(--font-mono); font-size: 0.8rem;" 
+                value="ciniir-isbn-restricted.maedaak.workers.dev"
+                placeholder="ciniir-isbn-restricted.maedaak.workers.dev"
+              >
+              <p class="help-text">※許可パラメータは <code>isbn=</code> のみ。ローカルおよびCloudflare Workers等の本番URLを設定可能。</p>
+            </div>
+
+            <div>
+              <label for="ndlProxyInput" class="threshold-label">
+                国会図書館サーチ (NDL) プロキシURL (任意):
+              </label>
+              <input 
+                type="text" 
+                id="ndlProxyInput" 
+                class="text-input" 
+                style="width: 100%; font-family: var(--font-mono); font-size: 0.8rem;" 
+                placeholder="https://your-ndl-proxy.workers.dev (未入力時は直接通信試行)"
+              >
+              <p class="help-text">※未入力の場合は直接通信を試行し、CORS制約時は安全にスキップ案内します。</p>
+            </div>
+
+            <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end;">
+              <button type="button" id="btnResetProxy" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                設定をデフォルトに戻す
+              </button>
+            </div>
+          </div>
+        </details>
+
+        <!-- Sample ISBN Chips -->
+        <div class="sample-section">
+          <div class="sample-title">
+            <span>お試し用ISBNリスト（クリックで1件追加）:</span>
+          </div>
+          <div id="sampleChipsContainer" class="sample-chips">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="resultsContainer" class="results-container" aria-live="polite">
+      <!-- Dynamically rendered on evaluation -->
+    </section>
+
+  </main>
+
+  <!-- Application Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-credits">
+        <span>Powered by:</span>
+        <a href="https://cir.nii.ac.jp/" target="_blank" rel="noopener noreferrer">CiNii Research (国立情報学研究所)</a>
+        <a href="https://ndlsearch.ndl.go.jp/" target="_blank" rel="noopener noreferrer">国立国会図書館サーチ</a>
+        <a href="https://ci.nii.ac.jp/books/" target="_blank" rel="noopener noreferrer">CiNii Books</a>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          Copyright &copy; 2013-2026 Akira Maeda All Rights Reserved.
+        </div>
+        <div>
+          図書系職員のためのアプリケーション開発講習会成果版 (静的Webアプリケーション版)
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./js/app.js"></script>
+</body>
+</html>
